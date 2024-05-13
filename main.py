@@ -71,7 +71,7 @@ def main():
     plt.xlabel('Место посадки')
 
     plt.ylabel('Доля выживших (%)')
-    plt.title('Доля выживших с указанием максимального возраста')
+    plt.title('Доля выживших пассажиров')
     plt.legend()
 
     st.pyplot(fig)
