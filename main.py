@@ -3,36 +3,43 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 
-def count_survivors(filter):
+def parse_csv():
+    result = []
     with open("data.csv") as file:
         csv_file = csv.reader(file)
         next(csv_file)
-        result = {
-            'Пункт посадки': [],
-            'Пассажиров': [],
-            'Выживших': [],
-        }
         for line in csv_file:
-            age_str = line[5]
-            if age_str.isdigit():
-                age = int(age_str)
+            result.append(line)
+    return result
+
+
+def count_survivors(filter, data):
+    result = {
+        'Пункт посадки': [],
+        'Пассажиров': [],
+        'Выживших': [],
+    }
+    for line in data:
+        age_str = line[5]
+        if age_str.isdigit():
+            age = int(age_str)
+        else:
+            age = 0
+        embarked = line[11]
+        survived = int(line[1])
+        if embarked:
+            #  отбрасываем пассажиров старше указанного возраста
+            if age > filter:
+                continue
+            if embarked in result['Пункт посадки']:
+                indx = result['Пункт посадки'].index(embarked)
+                result['Пассажиров'][indx] += 1
+                if survived:
+                    result['Выживших'][indx] += 1
             else:
-                age = 0
-            embarked = line[11]
-            survived = int(line[1])
-            if embarked:
-                #  отбрасываем пассажиров старше указанного возраста
-                if age > filter:
-                    continue
-                if embarked in result['Пункт посадки']:
-                    indx = result['Пункт посадки'].index(embarked)
-                    result['Пассажиров'][indx] += 1
-                    if survived:
-                        result['Выживших'][indx] += 1
-                else:
-                    result['Пункт посадки'].append(embarked)
-                    result['Пассажиров'].append(1)
-                    result['Выживших'].append(1 if survived else 0)
+                result['Пункт посадки'].append(embarked)
+                result['Пассажиров'].append(1)
+                result['Выживших'].append(1 if survived else 0)
     return result
 
 
@@ -59,7 +66,8 @@ def main():
         max_value=100,
         value=100
     )
-    data = prepare_data(count_survivors(slider))
+    strings = parse_csv()
+    data = prepare_data(count_survivors(slider, strings))
     st.table(data)
 
     fig = plt.figure(figsize=(10, 5))
